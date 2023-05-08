@@ -94,6 +94,37 @@ io.on('connection', (socket) => {
         
         
     })
+
+    socket.on('fileUpload', ({room, file}) => {
+        
+        // Null checks
+        if (room == '' || file == '' || room == undefined || file == undefined || room == null || file == null) {
+            socket.emit('error', 'empty');
+            return;
+        }
+    
+        // Check if user is in room
+        let isInRoom = checkIsInRoom(socket.id, room)
+    
+        // If user is not in room, return
+        if (!isInRoom) {
+            socket.emit('error', 'You are not in this room');
+            return;
+        }
+    
+        // Get username
+        let username = getUsername(socket.id, room);
+    
+        // Compose and Send Message
+        file = {
+            username: username,
+            file: file,
+        };
+    
+        io.to(room).emit('fileDownload', file);
+        console.log(file);
+
+    })
 })
 
 httpServer.listen(3000, () => {
