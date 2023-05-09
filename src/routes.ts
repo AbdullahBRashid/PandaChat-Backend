@@ -17,8 +17,6 @@ if (process.env.TOKEN_SECRET) {
 router.get('/token/new', (req, res) => {
     let json = req.body
 
-    console.log(json)
-
     if (typeof(json) !== 'object') {
         res.status(400).send('invalid json')
         return
@@ -36,6 +34,30 @@ router.get('/token/new', (req, res) => {
 
     let token = generateAccessToken({ username: json.username })
     res.json({ token: token })
+})
+
+
+router.post('/token/verify', (req, res) => {
+    let json = req.body
+
+    if (typeof(json) !== 'object') {
+        res.status(400).send('invalid json')
+        return
+    }
+
+    if (!json.token) {
+        res.status(400).send('token is required')
+        return
+    }
+
+    jwt.verify(json.token, SECRET_TOKEN, (err: any, user: any) => {
+        if (err) {
+            res.status(403).send('invalid token')
+            return
+        }
+
+        res.json({ username: user.username })
+    })
 })
 
 function generateAccessToken({username}: {username: string}) {
