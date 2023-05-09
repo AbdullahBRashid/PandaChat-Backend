@@ -2,9 +2,7 @@ import dotenv from 'dotenv'
 import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 
-dotenv.config({
-    path: '../.env'
-})
+dotenv.config()
 
 export let router = Router()
 
