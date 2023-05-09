@@ -16,6 +16,8 @@ app.use((req, res, next) => {
     next()
 })
 
+app.use(express.json())
+
 // Create socket.io server
 const io = new Server(httpServer, {
     cors: {

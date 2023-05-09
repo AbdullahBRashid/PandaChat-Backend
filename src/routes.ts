@@ -15,10 +15,30 @@ if (process.env.TOKEN_SECRET) {
 }
 
 router.get('/token/new', (req, res) => {
-    let token = generateAccessToken('test')
+    let json = req.body
+
+    console.log(json)
+
+    if (typeof(json) !== 'object') {
+        res.status(400).send('invalid json')
+        return
+    }
+
+    if (!json.username) {
+        res.status(400).send('username is required')
+        return
+    }
+
+    if (!json.password) {
+        res.status(400).send('password is required')
+        return
+    }
+
+    let token = generateAccessToken({ username: json.username })
     res.json({ token: token })
 })
 
-function generateAccessToken(username: string) {
-    return jwt.sign(username, SECRET_TOKEN, { expiresIn: '1800s' });
+function generateAccessToken({username}: {username: string}) {
+    let usernameObj = { username: username }
+    return jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '1800s' })
 }
