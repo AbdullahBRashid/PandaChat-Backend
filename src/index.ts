@@ -1,7 +1,7 @@
 import { Server } from 'socket.io'
 import express from 'express'
 import { createServer } from 'http'
-
+import { router } from './routes'
 import { userJoin, checkIsInRoom, getUsername } from './functions'
 
 
@@ -24,11 +24,8 @@ const io = new Server(httpServer, {
 })
 
 
-// Express
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
-
+// Express routing
+app.use('/', router)
 
 // Listen to socket.io events
 io.on('connection', (socket) => {
