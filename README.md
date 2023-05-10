@@ -1,3 +1,5 @@
+# Not ready yet
+
 # <div style="text-align: center">Panda Chat Backend</div>
 
 This is the official repository of the Panda Chat Backend.
