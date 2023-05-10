@@ -32,3 +32,26 @@ export function getMessages(asker: string, receiver: string, askerTag: string, r
 
     return messages
 }
+
+export async function checkIfUserExists(email: string): Promise<boolean> {
+    let user = await db.collection('users').findOne({ email: email })
+
+    if (user) {
+        return true
+    } else {
+        return false
+    }
+}
+
+export async function getUsernameAndTag(email: string, password: string) {
+    let user = await db.collection('users').findOne({ email: email, password: password })
+    if (!user) {
+        throw new Error('User does not exist')
+    }
+
+
+    return {username: user.username, tag: user.tag}
+}
+
+
+export function generateUserTag(username: string) {}

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import { Router } from 'express'
-import { getMessages } from './mongo'
+import { getMessages, getUsernameAndTag, checkIfUserExists } from './mongo'
 import jwt from 'jsonwebtoken'
 
 dotenv.config()
@@ -23,18 +23,28 @@ router.post('/token/new', (req, res) => {
         return
     }
 
-    if (!json.username) {
-        res.status(400).send('username is required')
-        return
-    }
-
     if (!json.password) {
         res.status(400).send('password is required')
         return
     }
 
-    let token = generateAccessToken({ username: json.username })
-    res.json({ token: token })
+    if (!json.email) {
+        res.status(400).send('email is required')
+        return
+    }
+
+    let userExists = checkIfUserExists(json.email)
+
+    // Resolve promise to check if user exists
+    userExists
+        .then( (userExists) => {
+            if (userExists) {
+                let token = generateAccessToken({ email: json.email, password: json.password })
+                res.json({ token: token })
+            } else {
+                res.status(400).send('User does not exist')
+            }
+        })
 })
 
 
@@ -92,6 +102,7 @@ router.get('/messages', (req, res) => {
         } else {
             let messages = getMessages(user.username, json['to-user-name'], user.userTag, json['to-user-tag'])
 
+            // Resolve promise to get messages
             messages.then((messages) => {
                 res.json(messages)
             })
@@ -101,8 +112,12 @@ router.get('/messages', (req, res) => {
 
 })
 
-function generateAccessToken({username}: {username: string}) {
-    // let userTag = generateUserTag(username)
-    let usernameObj = { username: username }
-    return jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '1800s' })
+
+function generateAccessToken({email, password}: {email: string, password: string}) {
+    // Resolve promise to get Username and Tag
+    getUsernameAndTag(email, password)
+        .then( ({username, tag}) => {
+            let usernameObj = { username: username, userTag: tag }
+            return jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
+        })
 }
