@@ -33,22 +33,25 @@ router.post('/token/new', (req, res) => {
         return
     }
 
-    let userExists = checkIfUserExists(json.email)
+    let userExists = checkIfUserExists(json.email, json.password)
 
     // Resolve promise to check if user exists
     userExists
         .then( (userExists) => {
             if (userExists) {
-                let token = generateAccessToken({ email: json.email, password: json.password })
-                res.json({ token: token })
+                generateAccessToken({ email: json.email, password: json.password })
+                    .then((token) => {
+                        res.json({ token: token })
+                    })
+
             } else {
-                res.status(400).send('User does not exist')
+                res.status(404).send('Wrong credentials')
             }
         })
 })
 
 
-router.post('/token/verify', (req, res) => {
+router.post('/token/refresh', (req, res) => {
     let json = req.body
 
     if (typeof(json) !== 'object') {
@@ -63,11 +66,17 @@ router.post('/token/verify', (req, res) => {
 
     jwt.verify(json.token, SECRET_TOKEN, (err: any, user: any) => {
         if (err) {
-            res.status(403).send('invalid token')
-            return
+            if (err instanceof jwt.TokenExpiredError) {
+                let token = refreshAccessToken({ username: user.username, usertag: user.userTag })
+                res.send({ token: token })
+                return
+            } else {
+                res.status(403).send('invalid token')
+                return
+            }
         }
-
-        res.json({ username: user.username, userTag: user.userTag })
+        
+        res.json({ username: user.username, userTag: user.user_tag })
     })
 })
 
@@ -113,11 +122,15 @@ router.get('/messages', (req, res) => {
 })
 
 
-function generateAccessToken({email, password}: {email: string, password: string}) {
+async function generateAccessToken({email, password}: {email: string, password: string}) {
     // Resolve promise to get Username and Tag
-    getUsernameAndTag(email, password)
-        .then( ({username, tag}) => {
-            let usernameObj = { username: username, userTag: tag }
-            return jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
-        })
+    let usernameObj = await getUsernameAndTag(email, password)
+
+    let jsonwt = jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
+    return jsonwt
+}
+
+function refreshAccessToken({username, usertag}: {username: string, usertag: string}) {
+    let usernameObj = { username: username, userTag: usertag }
+    return jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
 }

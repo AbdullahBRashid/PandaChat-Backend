@@ -33,8 +33,8 @@ export function getMessages(asker: string, receiver: string, askerTag: string, r
     return messages
 }
 
-export async function checkIfUserExists(email: string): Promise<boolean> {
-    let user = await db.collection('users').findOne({ email: email })
+export async function checkIfUserExists(email: string, password: string): Promise<boolean> {
+    let user = await db.collection('users').findOne({ email: email, password: password })
 
     if (user) {
         return true
@@ -49,8 +49,7 @@ export async function getUsernameAndTag(email: string, password: string) {
         throw new Error('User does not exist')
     }
 
-
-    return {username: user.username, tag: user.tag}
+    return {username: user.username, user_tag: user.user_tag}
 }
 
 
