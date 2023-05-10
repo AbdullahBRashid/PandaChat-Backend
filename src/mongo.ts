@@ -30,12 +30,12 @@ let db = client.db('mongo-chat-test')
 // Get latest 20 messages from database
 export function getMessages(asker: string, receiver: string, askerTag: string, receiverTag: string) {
 
-    console.log(`asker: ${asker}, receiver: ${receiver}`)
+    console.log(`asker: ${asker}, receiver: ${receiver}, askerTag: ${askerTag}, receiverTag: ${receiverTag}`)
 
     let messages = db.collection('chats').find({
         $or: [
-            { "toUserName": asker, "fromUser": receiver, "toUserTag": askerTag, "fromUserTag": receiverTag },
-            { "toUserName": receiver, "fromUser": asker, "toUserTag": receiverTag, "fromUserTag": askerTag }
+            { "to_username": asker, "from_username": receiver, "to_user_tag": askerTag, "from_user_tag": receiverTag },
+            { "to_username": receiver, "from_username": asker, "to_user_tag": receiverTag, "from_user_tag": askerTag }
         ]
     }).sort('timestamp', -1).limit(20).toArray()
 

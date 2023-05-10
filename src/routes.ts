@@ -76,7 +76,13 @@ router.post('/token/refresh', (req, res) => {
     jwt.verify(json.token, SECRET_TOKEN, (err: any, user: any) => {
         if (err) {
             if (err instanceof jwt.TokenExpiredError) {
-                let token = refreshAccessToken({ username: user.username, usertag: user.userTag })
+
+                let decodedToken: jwt.JwtPayload;
+                decodedToken = jwt.decode(json.token) as jwt.JwtPayload
+                let username = decodedToken.username
+                let userTag = decodedToken.user_tag
+
+                let token = refreshAccessToken({ username: username, usertag: userTag })
                 res.send({ token: token })
                 return
             } else {
@@ -104,7 +110,7 @@ router.get('/messages', (req, res) => {
     }
 
     if (!json['to-user-name']) {
-        res.status(400).send('to-user is required')
+        res.status(400).send('to-user-name is required')
         return
     }
 
@@ -118,7 +124,7 @@ router.get('/messages', (req, res) => {
             res.status(403).send('invalid token')
             return
         } else {
-            let messages = getMessages(user.username, json['to-user-name'], user.userTag, json['to-user-tag'])
+            let messages = getMessages(user.username, json['to-user-name'], user.user_tag, json['to-user-tag'])
 
             // Resolve promise to get messages
             messages.then((messages) => {
