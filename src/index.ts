@@ -16,7 +16,9 @@ app.use((req, res, next) => {
     next()
 })
 
+// Body parser
 app.use(express.json())
+
 
 // Create socket.io server
 const io = new Server(httpServer, {
@@ -126,6 +128,7 @@ io.on('connection', (socket) => {
     })
 })
 
+// Start server
 httpServer.listen(3000, () => {
     console.log('listening on *:3000');
 })
