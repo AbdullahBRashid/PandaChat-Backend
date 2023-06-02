@@ -49,22 +49,45 @@ io.on('connection', (socket) => {
     
     // Join room
     socket.on('join', (data) => {
-        if (!data.token || !data.toUserName || typeof(data.token) !== 'string' || typeof(data.toUserName) !== 'string') {
+        if (!data.token || typeof(data.token) !== 'string') {
             socket.emit('error', 'invalid data')
+            console.log('error')
             return
         }
 
-        let username = jwt.verify(data.token, secret)
-        console.log(username)
+        let jwtData = JSON.stringify(jwt.verify(data.token, secret))
+        console.log(jwtData)
 
-        // socket.join(username)
-        console.log(`User ${data.username} joined room ${data.room}`)
+        let username = JSON.parse(jwtData).username
+
+        socket.join(username)
+        console.log(`User ${username} joined!`)
     })
 
     // Leave room
-    socket.on('leave', (data) => {
-        socket.leave(data.room)
-        console.log(`User ${data.username} left room ${data.room}`)
+    socket.on('disconnect', () => {
+        console.log('user disconnected')
+    })
+
+    socket.on('message', (data) => {
+        if (!data.token || typeof(data.token) !== 'string' || !data.message || typeof(data.message) !== 'string' || !data.toUser || typeof(data.toUser) !== 'string') {
+            socket.emit('error', 'invalid data')
+            console.log('error')
+            return
+        }
+
+        let jwtData = JSON.stringify(jwt.verify(data.token, secret))
+        console.log(jwtData)
+
+        let username = JSON.parse(jwtData).username
+        let toUser = data.toUser
+
+        let message = {
+            username: username,
+            message: data.message
+        }
+
+        io.to(toUser).emit('message', message)
     })
 
 })
