@@ -4,7 +4,7 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 
 // Import functions
-import { getMessages, getUsernameAndTag, checkIfUserExists } from './mongo'
+import { getMessages, getUsername, checkIfUserExists } from './mongo'
 
 // Load .env file
 dotenv.config()
@@ -80,9 +80,9 @@ router.post('/token/refresh', (req, res) => {
                 let decodedToken: jwt.JwtPayload;
                 decodedToken = jwt.decode(json.token) as jwt.JwtPayload
                 let username = decodedToken.username
-                let userTag = decodedToken.user_tag
+            
 
-                let token = refreshAccessToken({ username: username, usertag: userTag })
+                let token = refreshAccessToken({ username: username })
                 res.send({ token: token })
                 return
             } else {
@@ -91,7 +91,7 @@ router.post('/token/refresh', (req, res) => {
             }
         }
 
-        res.json({ username: user.username, userTag: user.user_tag })
+        res.json({ username: user.username })
     })
 })
 
@@ -114,17 +114,12 @@ router.get('/messages', (req, res) => {
         return
     }
 
-    if (!json['to-user-tag']) {
-        res.status(400).send('to-user-tag is required')
-        return
-    }
-
     jwt.verify(json.token, SECRET_TOKEN, (err: any, user: any) => {
         if (err) {
             res.status(403).send('invalid token')
             return
         } else {
-            let messages = getMessages(user.username, json['to-user-name'], user.user_tag, json['to-user-tag'])
+            let messages = getMessages(user.username, json['to-user-name'])
 
             // Resolve promise to get messages
             messages.then((messages) => {
@@ -139,8 +134,8 @@ router.get('/messages', (req, res) => {
 
 // Function to generate access token
 async function generateAccessToken({email, password}: {email: string, password: string}) {
-    // Resolve promise to get Username and Tag
-    let usernameObj = await getUsernameAndTag(email, password)
+    // Resolve promise to get Username
+    let usernameObj = await getUsername(email, password)
 
     let jsonwt = jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
     return jsonwt
@@ -148,7 +143,7 @@ async function generateAccessToken({email, password}: {email: string, password: 
 
 
 // Function to refresh access token
-function refreshAccessToken({username, usertag}: {username: string, usertag: string}) {
-    let usernameObj = { username: username, userTag: usertag }
+function refreshAccessToken({username}: {username: string}) {
+    let usernameObj = { username: username }
     return jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
 }

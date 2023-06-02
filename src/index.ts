@@ -1,9 +1,21 @@
-import { Server } from 'socket.io'
+// Import modules
+
 import express from 'express'
+import jwt from 'jsonwebtoken'
+import { Server } from 'socket.io'
 import { createServer } from 'http'
 import { router } from './routes'
-import { userJoin, checkIsInRoom, getUsername } from './functions'
+import dotenv from 'dotenv'
 
+dotenv.config()
+
+let secret: string
+
+if (process.env.TOKEN_SECRET) {
+    secret = process.env.TOKEN_SECRET
+} else {
+    throw new Error('SECRET not found in .env file')
+}
 
 // App initialization
 const app = express()
@@ -31,101 +43,30 @@ const io = new Server(httpServer, {
 // Express routing
 app.use('/', router)
 
+
 // Listen to socket.io events
 io.on('connection', (socket) => {
-
-    console.log('Connected', socket.id + "\n");
-
-    socket.on("joinRoom", ({ username, room, password }) => {
-
-        // Null checks
-        if (username == '' || room == '' || password == '' || username == undefined || room == undefined || password == undefined || username == null || room == null || password == null) {
-            socket.emit('roomFeedback', 'empty')
-            console.log(`User ${username}:${socket.id} tried to join room ${room} with password ${password} but failed because of empty fields`)
-            return;
+    
+    // Join room
+    socket.on('join', (data) => {
+        if (!data.token || !data.toUserName || typeof(data.token) !== 'string' || typeof(data.toUserName) !== 'string') {
+            socket.emit('error', 'invalid data')
+            return
         }
 
-        // Check if room exists
-        let isEntryAvailable = userJoin(socket.id, username, room, password);
+        let username = jwt.verify(data.token, secret)
+        console.log(username)
 
-        // If room exists, join it
-        if (isEntryAvailable) {
-            socket.join(room);
-            socket.emit('roomFeedback', 'correct')
-            io.to(room).emit('userJoined', `User ${username} joined room ${room}`);
-            console.log(`User ${username}:${socket.id} joined room ${room} with password ${password}`);
-        } else {
-            socket.emit('roomFeedback', 'wrong')
-        }
-    });
-
-
-    socket.on('disconnect', () => {
-        io.emit('message', 'user disconnected '+ socket.id);
+        // socket.join(username)
+        console.log(`User ${data.username} joined room ${data.room}`)
     })
 
-    socket.on('message', ({room, message}) => {
-
-        // Null checks
-        if (room == '' || message == '' || room == undefined || message == undefined || room == null || message == null) {
-            socket.emit('error', 'empty');
-            return;
-        }
-
-        // Check if user is in room
-        let isInRoom = checkIsInRoom(socket.id, room)
-
-        // If user is not in room, return
-        if (!isInRoom) {
-            socket.emit('error', 'You are not in this room');
-            return;
-        }
-
-        // Get username
-        let username = getUsername(socket.id, room);
-
-        // Compose and Send Message
-        message = {
-            username: username,
-            message: message,
-        };
-        
-        io.to(room).emit('message', message);
-        console.log(message);
-        
-        
+    // Leave room
+    socket.on('leave', (data) => {
+        socket.leave(data.room)
+        console.log(`User ${data.username} left room ${data.room}`)
     })
 
-    socket.on('fileUpload', ({room, file}) => {
-        
-        // Null checks
-        if (room == '' || file == '' || room == undefined || file == undefined || room == null || file == null) {
-            socket.emit('error', 'empty');
-            return;
-        }
-    
-        // Check if user is in room
-        let isInRoom = checkIsInRoom(socket.id, room)
-    
-        // If user is not in room, return
-        if (!isInRoom) {
-            socket.emit('error', 'You are not in this room');
-            return;
-        }
-    
-        // Get username
-        let username = getUsername(socket.id, room);
-    
-        // Compose and Send Message
-        file = {
-            username: username,
-            file: file,
-        };
-    
-        io.to(room).emit('fileDownload', file);
-        console.log(file);
-
-    })
 })
 
 // Start server

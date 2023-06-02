@@ -28,14 +28,14 @@ let db = client.db('mongo-chat-test')
 // Export functions
 
 // Get latest 20 messages from database
-export function getMessages(asker: string, receiver: string, askerTag: string, receiverTag: string) {
+export function getMessages(asker: string, receiver: string) {
 
-    console.log(`asker: ${asker}, receiver: ${receiver}, askerTag: ${askerTag}, receiverTag: ${receiverTag}`)
+    console.log(`asker: ${asker}, receiver: ${receiver}`)
 
     let messages = db.collection('chats').find({
         $or: [
-            { "to_username": asker, "from_username": receiver, "to_user_tag": askerTag, "from_user_tag": receiverTag },
-            { "to_username": receiver, "from_username": asker, "to_user_tag": receiverTag, "from_user_tag": askerTag }
+            { "to_username": asker, "from_username": receiver },
+            { "to_username": receiver, "from_username": asker}
         ]
     }).sort('timestamp', -1).limit(20).toArray()
 
@@ -53,15 +53,12 @@ export async function checkIfUserExists(email: string, password: string): Promis
     }
 }
 
-// Get username and tag from database
-export async function getUsernameAndTag(email: string, password: string) {
+// Get username from database
+export async function getUsername(email: string, password: string) {
     let user = await db.collection('users').findOne({ email: email, password: password })
     if (!user) {
         throw new Error('User does not exist')
     }
 
-    return {username: user.username, user_tag: user.user_tag}
+    return {username: user.username}
 }
-
-// Generate a new tag for new users
-export function generateUserTag(username: string) {}
