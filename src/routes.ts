@@ -177,7 +177,6 @@ router.post('/messages/names', (req, res) => {
 
             // Resolve promise to get messages
             messages.then((messages) => {
-                console.log(messages)
                 res.json(messages)
             })
         }

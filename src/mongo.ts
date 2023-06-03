@@ -30,8 +30,6 @@ let db = client.db('mongo-chat-test')
 // Get latest 20 messages from database
 export function getMessages(asker: string, receiver: string) {
 
-    console.log(`asker: ${asker}, receiver: ${receiver}`)
-
     let messages = db.collection('chats').find({
         $or: [
             { "to_username": asker, "from_username": receiver },
@@ -57,4 +55,14 @@ export function getChatNames(username: string) {
     let chats = db.collection('chats').find({ $or: [{ to_username: username }, { from_username: username }] }).toArray()
 
     return chats
+}
+
+export function saveMessage(to_username: string, from_username: string, message: string) {
+    let messageObject = {
+        to_username: to_username,
+        from_username: from_username,
+        message: message,
+        timestamp: Date.now()
+    }
+    db.collection('chats').insertOne(messageObject)
 }
