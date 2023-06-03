@@ -89,6 +89,7 @@ router.post('/token/refresh', (req, res) => {
     })
 })
 
+// Route for verifying token
 router.post('/token/verify', (req, res) => {
     let json = req.body
 
@@ -113,7 +114,7 @@ router.post('/token/verify', (req, res) => {
 })
 
 // Route for getting messages
-router.get('/messages', (req, res) => {
+router.post('/messages/name', (req, res) => {
     let json = req.body
 
     if (typeof(json) != 'object') {
