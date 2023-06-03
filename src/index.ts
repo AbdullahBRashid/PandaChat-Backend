@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
                 console.log('error')
                 return
             } else if (error instanceof jwt.TokenExpiredError) {
-                socket.emit('error', 'token expired')
+                socket.emit('error', 'TokenExpiredError')
                 console.log('error')
                 return
             }
@@ -101,7 +101,7 @@ io.on('connection', (socket) => {
                 console.log('error')
                 return
             } else if (error instanceof jwt.TokenExpiredError) {
-                socket.emit('error', 'token expired')
+                socket.emit('error', 'TokenExpiredError')
                 console.log('error')
                 return
             }
