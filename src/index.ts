@@ -57,6 +57,20 @@ io.on('connection', (socket) => {
             return
         }
 
+        try {
+            jwt.verify(data.token, secret)
+        } catch (error) {
+            if (error instanceof jwt.JsonWebTokenError) {
+                socket.emit('error', 'invalid token')
+                console.log('error')
+                return
+            } else if (error instanceof jwt.TokenExpiredError) {
+                socket.emit('error', 'token expired')
+                console.log('error')
+                return
+            }
+        }
+
         let jwtData = JSON.stringify(jwt.verify(data.token, secret))
         console.log(jwtData)
 
@@ -76,6 +90,21 @@ io.on('connection', (socket) => {
             socket.emit('error', 'invalid data')
             console.log('error')
             return
+        }
+
+
+        try {
+            jwt.verify(data.token, secret)
+        } catch (error) {
+            if (error instanceof jwt.JsonWebTokenError) {
+                socket.emit('error', 'invalid token')
+                console.log('error')
+                return
+            } else if (error instanceof jwt.TokenExpiredError) {
+                socket.emit('error', 'token expired')
+                console.log('error')
+                return
+            }
         }
 
         let jwtData = JSON.stringify(jwt.verify(data.token, secret))
