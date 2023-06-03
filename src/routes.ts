@@ -4,7 +4,7 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 
 // Import functions
-import { getMessages, getUser } from './mongo'
+import { getMessages, getUser, getChatNames } from './mongo'
 
 // Load .env file
 dotenv.config()
@@ -24,6 +24,8 @@ if (process.env.TOKEN_SECRET) {
 router.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Headers', '*')
+    res.setHeader('Access-Control-Allow-Methods', '*')
+    res.setHeader('Access-Control-Expose-Headers', '*')
     next()
 })
 
@@ -132,8 +134,8 @@ router.post('/messages/name', (req, res) => {
         return
     }
 
-    if (!json['to-user-name']) {
-        res.status(400).send('to-user-name is required')
+    if (!json['toUser']) {
+        res.status(400).send('toUser is required')
         return
     }
 
@@ -142,7 +144,7 @@ router.post('/messages/name', (req, res) => {
             res.status(403).send('invalid token')
             return
         } else {
-            let messages = getMessages(user.username, json['to-user-name'])
+            let messages = getMessages(user.username, json['toUser'])
 
             // Resolve promise to get messages
             messages.then((messages) => {
@@ -150,8 +152,36 @@ router.post('/messages/name', (req, res) => {
             })
         }
     })
+})
 
+// To get messages
+router.post('/messages/names', (req, res) => {
+    let json = req.body
 
+    if (typeof(json) != 'object') {
+        res.status(400).send('invalid json')
+        return
+    }
+
+    if (!json.token) {
+        res.status(400).send('token is required')
+        return
+    }
+
+    jwt.verify(json.token, SECRET_TOKEN, (err: any, user: any) => {
+        if (err) {
+            res.status(403).send('invalid token')
+            return
+        } else {
+            let messages = getChatNames(user.username)
+
+            // Resolve promise to get messages
+            messages.then((messages) => {
+                console.log(messages)
+                res.json(messages)
+            })
+        }
+    })
 })
 
 

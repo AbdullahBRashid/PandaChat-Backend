@@ -52,3 +52,9 @@ export async function getUser(email: string, password: string): Promise<{exists:
         return { exists: false, username: null }
     }
 }
+
+export function getChatNames(username: string) {
+    let chats = db.collection('chats').find({ $or: [{ to_username: username }, { from_username: username }] }).toArray()
+
+    return chats
+}
