@@ -25,6 +25,7 @@ const httpServer = createServer(app)
 // CORS Handling
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Headers', '*')
     next()
 })
 
@@ -46,6 +47,7 @@ app.use('/', router)
 
 // Listen to socket.io events
 io.on('connection', (socket) => {
+    console.log(`User ${socket.id} connected!`)
     
     // Join room
     socket.on('join', (data) => {
