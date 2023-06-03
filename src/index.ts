@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
 import { router } from './routes'
+import { saveMessage } from './mongo'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -76,7 +77,6 @@ io.on('connection', (socket) => {
         }
 
         let jwtData = JSON.stringify(jwt.verify(data.token, secret))
-        console.log(jwtData)
 
         let username = JSON.parse(jwtData).username
 
@@ -112,7 +112,6 @@ io.on('connection', (socket) => {
         }
 
         let jwtData = JSON.stringify(jwt.verify(data.token, secret))
-        console.log(jwtData)
 
         let username = JSON.parse(jwtData).username
         socket.join(username)
@@ -120,8 +119,11 @@ io.on('connection', (socket) => {
 
         let message = {
             username: username,
+            toUser: toUser,
             message: data.message
         }
+
+        saveMessage(toUser, username, data.message)
 
         io.to(toUser).emit('message', message)
     })
