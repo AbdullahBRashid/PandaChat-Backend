@@ -21,6 +21,11 @@ if (process.env.TOKEN_SECRET) {
     throw new Error('TOKEN_SECRET not found in .env file');
 }
 
+router.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Headers', '*')
+    next()
+})
 
 // Route for new token (Login)
 router.post('/token/new', (req, res) => {

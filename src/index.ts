@@ -36,7 +36,9 @@ app.use(express.json())
 // Create socket.io server
 const io = new Server(httpServer, {
     cors: {
-        origin: '*'
+        origin: '*',
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['*'],
     }
 })
 
