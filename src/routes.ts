@@ -89,6 +89,29 @@ router.post('/token/refresh', (req, res) => {
     })
 })
 
+router.post('/token/verify', (req, res) => {
+    let json = req.body
+
+    if (typeof(json) !== 'object') {
+        res.status(400).send('invalid json')
+        return
+    }
+
+    if (!json.token) {
+        res.status(400).send('token is required')
+        return
+    }
+
+    jwt.verify(json.token, SECRET_TOKEN, (err: any, user: any) => {
+        if (err) {
+            res.status(403).send('invalid token')
+            return
+        }
+
+        res.json({ username: user.username })
+    })
+})
+
 // Route for getting messages
 router.get('/messages', (req, res) => {
     let json = req.body

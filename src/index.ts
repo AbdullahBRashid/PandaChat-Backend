@@ -111,6 +111,7 @@ io.on('connection', (socket) => {
         console.log(jwtData)
 
         let username = JSON.parse(jwtData).username
+        socket.join(username)
         let toUser = data.toUser
 
         let message = {
