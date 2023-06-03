@@ -4,7 +4,7 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 
 // Import functions
-import { getMessages, getUsername, checkIfUserExists } from './mongo'
+import { getMessages, getUser } from './mongo'
 
 // Load .env file
 dotenv.config()
@@ -41,21 +41,15 @@ router.post('/token/new', (req, res) => {
         return
     }
 
-    let userExists = checkIfUserExists(json.email, json.password)
-
-    // Resolve promise to check if user exists
-    userExists
-        .then( (userExists) => {
-            if (userExists) {
-                generateAccessToken({ email: json.email, password: json.password })
-                    .then((token) => {
-                        res.json({ token: token })
-                    })
-
-            } else {
-                res.status(404).send('Wrong credentials')
-            }
-        })
+    let user = getUser(json.email, json.password)
+                .then((user) => {
+                    if (user['exists']) {
+                        let token = jwt.sign({ username: user.username }, SECRET_TOKEN, { expiresIn: '1h' })
+                        res.json({ token: token, username: user.username })
+                    } else {
+                        res.status(403).send('invalid credentials')
+                    }
+                })
 })
 
 
@@ -130,16 +124,6 @@ router.get('/messages', (req, res) => {
 
 
 })
-
-
-// Function to generate access token
-async function generateAccessToken({email, password}: {email: string, password: string}) {
-    // Resolve promise to get Username
-    let usernameObj = await getUsername(email, password)
-
-    let jsonwt = jwt.sign(usernameObj, SECRET_TOKEN, { expiresIn: '3h' })
-    return jsonwt
-}
 
 
 // Function to refresh access token

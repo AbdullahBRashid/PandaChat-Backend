@@ -43,22 +43,12 @@ export function getMessages(asker: string, receiver: string) {
 }
 
 // Check if user exists in database
-export async function checkIfUserExists(email: string, password: string): Promise<boolean> {
+export async function getUser(email: string, password: string): Promise<{exists: Boolean, username: string | null}> {
     let user = await db.collection('users').findOne({ email: email, password: password })
 
     if (user) {
-        return true
+        return { exists: true, username: user.username }
     } else {
-        return false
+        return { exists: false, username: null }
     }
-}
-
-// Get username from database
-export async function getUsername(email: string, password: string) {
-    let user = await db.collection('users').findOne({ email: email, password: password })
-    if (!user) {
-        throw new Error('User does not exist')
-    }
-
-    return {username: user.username}
 }
