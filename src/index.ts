@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
             jwt.verify(data.token, secret)
         } catch (error) {
             if (error instanceof jwt.JsonWebTokenError) {
-                socket.emit('error', 'invalid token')
+                socket.emit('error', 'JsonWebTokenError')
                 console.log('error')
                 return
             } else if (error instanceof jwt.TokenExpiredError) {
@@ -97,7 +97,7 @@ io.on('connection', (socket) => {
             jwt.verify(data.token, secret)
         } catch (error) {
             if (error instanceof jwt.JsonWebTokenError) {
-                socket.emit('error', 'invalid token')
+                socket.emit('error', 'JsonWebTokenError')
                 console.log('error')
                 return
             } else if (error instanceof jwt.TokenExpiredError) {
