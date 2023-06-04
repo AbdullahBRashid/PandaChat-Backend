@@ -56,6 +56,7 @@ io.on('connection', (socket) => {
     
     // Join room
     socket.on('join', (data) => {
+        console.log(data.token)
         if (!data.token || typeof(data.token) !== 'string') {
             socket.emit('error', 'invalid data')
             console.log('error')
@@ -92,6 +93,7 @@ io.on('connection', (socket) => {
     socket.on('message', (data) => {
         if (!data.token || typeof(data.token) !== 'string' || !data.message || typeof(data.message) !== 'string' || !data.toUser || typeof(data.toUser) !== 'string') {
             socket.emit('error', 'invalid data')
+            console.log('reached here?')
             console.log('error')
             return
         }
@@ -126,6 +128,7 @@ io.on('connection', (socket) => {
         saveMessage(toUser, username, data.message)
 
         io.to(toUser).emit('message', message)
+        socket.send(message)
         console.log(message)
     })
 
