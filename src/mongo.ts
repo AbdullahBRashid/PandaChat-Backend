@@ -32,8 +32,8 @@ export function getMessages(asker: string, receiver: string) {
 
     let messages = db.collection('chats').find({
         $or: [
-            { "to_username": asker, "from_username": receiver },
-            { "to_username": receiver, "from_username": asker}
+            { "to": asker, "from": receiver },
+            { "to": receiver, "from": asker}
         ]
     }).sort('timestamp', -1).limit(20).toArray()
 
@@ -52,15 +52,16 @@ export async function getUser(email: string, password: string): Promise<{exists:
 }
 
 export function getChatNames(username: string) {
-    let chats = db.collection('chats').find({ $or: [{ to_username: username }, { from_username: username }] }).toArray()
+    let chats = db.collection('chats').find({ $or: [{ to: username }, { from: username }] }).toArray()
+    console.log(chats)
 
     return chats
 }
 
-export function saveMessage(to_username: string, from_username: string, message: string) {
+export function saveMessage(to: string, from: string, message: string) {
     let messageObject = {
-        to_username: to_username,
-        from_username: from_username,
+        to: to,
+        from: from,
         message: message,
         timestamp: Date.now()
     }
