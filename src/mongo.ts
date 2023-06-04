@@ -35,7 +35,7 @@ export function getMessages(asker: string, receiver: string) {
             { "to": asker, "from": receiver },
             { "to": receiver, "from": asker}
         ]
-    }).sort('timestamp', -1).limit(20).toArray()
+    }).sort('timestamp').limit(20).toArray()
 
     return messages
 }
