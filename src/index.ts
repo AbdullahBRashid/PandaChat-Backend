@@ -126,6 +126,7 @@ io.on('connection', (socket) => {
         saveMessage(toUser, username, data.message)
 
         io.to(toUser).emit('message', message)
+        console.log(message)
     })
 
 })

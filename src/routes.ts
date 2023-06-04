@@ -4,7 +4,7 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 
 // Import functions
-import { getMessages, getUser, getChatNames } from './mongo'
+import { getMessages, getUser, getContacts } from './mongo'
 
 // Load .env file
 dotenv.config()
@@ -173,11 +173,9 @@ router.post('/messages/names', (req, res) => {
             res.status(403).send('invalid token')
             return
         } else {
-            let messages = getChatNames(user.username)
-
-            // Resolve promise to get messages
-            messages.then((messages) => {
-                res.json(messages)
+            getContacts(user.username).then((names) => {
+                res.json(names)
+                console.log(names)
             })
         }
     })

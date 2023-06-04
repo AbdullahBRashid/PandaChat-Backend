@@ -51,11 +51,22 @@ export async function getUser(email: string, password: string): Promise<{exists:
     }
 }
 
-export function getChatNames(username: string) {
+export async function getContacts(username: string) {
     let chats = db.collection('chats').find({ $or: [{ to: username }, { from: username }] }).toArray()
-    console.log(chats)
+    let contacts: any[] = []
 
-    return chats
+    await chats.then((chats) => {
+        for (let chat of chats) {
+            if (chat.to === username && !contacts.includes(chat.from)) {
+                contacts.push(chat.from)
+            } else if (chat.from === username && !contacts.includes(chat.to)) {
+                contacts.push(chat.to)
+            }
+        }
+        contacts = contacts
+    })
+
+    return contacts
 }
 
 export function saveMessage(to: string, from: string, message: string) {
