@@ -226,6 +226,27 @@ router.post('/messages/names', (req, res) => {
     })
 })
 
+router.post('/user/check', (req, res) => {
+    let json = req.body
+
+    if (typeof(json) != 'object') {
+        res.status(400).send('invalid json')
+        return
+    }
+
+    if (!json.username) {
+        res.status(400).send('username is required')
+        return
+    }
+
+    verifyUsername(json.username).then((exists) => {
+        if (exists) {
+            res.json({ exists: true })
+        } else {
+            res.json({ exists: false })
+        }
+    })
+})
 
 // Function to refresh access token
 function refreshAccessToken({username}: {username: string}) {
