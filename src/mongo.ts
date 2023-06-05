@@ -35,7 +35,7 @@ export function getMessages(asker: string, receiver: string) {
             { "to": asker, "from": receiver },
             { "to": receiver, "from": asker}
         ]
-    }).sort('timestamp').limit(20).toArray()
+    }).sort('timestamp', -1).limit(20).toArray()
 
     return messages
 }
@@ -69,12 +69,60 @@ export async function getContacts(username: string) {
     return contacts
 }
 
-export function saveMessage(to: string, from: string, message: string) {
+export async function saveMessage(to: string, from: string, message: string) {
     let messageObject = {
         to: to,
         from: from,
         message: message,
         timestamp: Date.now()
     }
-    db.collection('chats').insertOne(messageObject)
+    // console.log(messageObject)
+    let returnedDoc = await db.collection('chats').insertOne(messageObject)
+    let id = returnedDoc.insertedId
+
+    let  sendableMessageObject = await db.collection('chats').findOne({ _id: id })
+    console.log(sendableMessageObject)
+
+    return sendableMessageObject
+}
+
+// Save user to database
+export function saveUser(username: string, email: string, password: string) {
+    let user = {
+        username: username,
+        email: email,
+        password: password,
+        joined: Date.now
+    }
+
+    db.collection('users').insertOne(user)
+}
+
+// Verify if username is available
+export async function verifyUsername(username: string) {
+    let exists: boolean = false;
+    await db.collection('users').findOne({ username: username }).then((user) => {
+        if (user) {
+            exists =  true
+        } else {
+            exists = false
+        }
+    }
+    )
+    return exists
+}
+
+// Verify duplicate email
+export async function verifyEmail(email: string) {
+    let exists: boolean = false;
+    await db.collection('users').findOne({ email: email }).then((user) => {
+        if (user) {
+            console.log(user)
+            exists =  true
+        } else {
+            exists = false
+        }
+    }
+    )
+    return exists
 }

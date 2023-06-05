@@ -119,17 +119,17 @@ io.on('connection', (socket) => {
         socket.join(username)
         let toUser = data.toUser
 
-        let message = {
-            username: username,
-            toUser: toUser,
-            message: data.message
-        }
-
         saveMessage(toUser, username, data.message)
-
-        io.to(toUser).emit('message', message)
-        socket.send(message)
-        console.log(message)
+            .then(message => {
+                if (message === null) {
+                    socket.emit('error', 'message not saved')
+                    console.log('error')
+                    return
+                }
+                io.to(toUser).emit('message', message)
+                socket.send(message)
+                console.log(message)
+            })        
     })
 
 })
