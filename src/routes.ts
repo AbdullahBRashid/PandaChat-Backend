@@ -4,7 +4,7 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 
 // Import functions
-import { getMessages, getUser, getContacts } from './mongo'
+import { getMessages, getUser, getContacts, saveUser, verifyUsername, verifyEmail } from './mongo'
 
 // Load .env file
 dotenv.config()
@@ -29,6 +29,51 @@ router.use((req, res, next) => {
     next()
 })
 
+// Route for registration (Create new user)
+router.post('/register', (req, res) => {
+    let json = req.body
+
+    if (typeof(json) !== 'object') {
+        res.status(400).send('invalid json')
+        return
+    }
+
+    if (!json.password) {
+        res.status(400).send('password is required')
+        return
+    }
+
+    if (!json.email) {
+        res.status(400).send('email is required')
+        return
+    }
+
+    if (!json.username) {
+        res.status(400).send('username is required')
+        return
+    }
+
+    verifyEmail(json.email)
+        .then((exists) => {
+            if (exists) {
+                res.status(401).send({ status: false, message: 'Email already in use!' })
+                console.log('Email already in use!')
+            } else {
+                verifyUsername(json.username).then((exists) => {
+                    if (exists) {
+                        res.status(401).send({status: false, message: 'Username already in use!'})
+                        return
+                    } else {
+                        saveUser(json.username, json.email, json.password)
+                        res.send(JSON.stringify({ status: true, message: 'User created successfully!' }))
+                    }
+                })                
+            }
+        }).catch((err) => {
+            console.log(err)
+        })
+
+})
 // Route for new token (Login)
 router.post('/token/new', (req, res) => {
     let json = req.body
