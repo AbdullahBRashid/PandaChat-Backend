@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
         console.log(data.token)
         if (!data.token || typeof(data.token) !== 'string') {
             socket.emit('error', 'invalid data')
-            console.log('error')
+            console.log('on join error 1')
             return
         }
 
@@ -68,11 +68,11 @@ io.on('connection', (socket) => {
         } catch (error) {
             if (error instanceof jwt.JsonWebTokenError) {
                 socket.emit('error', 'JsonWebTokenError')
-                console.log('error')
+                console.log('on join error 2')
                 return
             } else if (error instanceof jwt.TokenExpiredError) {
                 socket.emit('error', 'TokenExpiredError')
-                console.log('error')
+                console.log('on join error 3')
                 return
             }
         }
@@ -93,8 +93,7 @@ io.on('connection', (socket) => {
     socket.on('message', (data) => {
         if (!data.token || typeof(data.token) !== 'string' || !data.message || typeof(data.message) !== 'string' || !data.toUser || typeof(data.toUser) !== 'string') {
             socket.emit('error', 'invalid data')
-            console.log('reached here?')
-            console.log('error')
+            console.log('on message error 1')
             return
         }
 
@@ -104,11 +103,11 @@ io.on('connection', (socket) => {
         } catch (error) {
             if (error instanceof jwt.JsonWebTokenError) {
                 socket.emit('error', 'JsonWebTokenError')
-                console.log('error')
+                console.log('on message error 2')
                 return
             } else if (error instanceof jwt.TokenExpiredError) {
                 socket.emit('error', 'TokenExpiredError')
-                console.log('error')
+                console.log('on message error 3')
                 return
             }
         }
@@ -123,7 +122,7 @@ io.on('connection', (socket) => {
             .then(message => {
                 if (message === null) {
                     socket.emit('error', 'message not saved')
-                    console.log('error')
+                    console.log('on message error 4')
                     return
                 }
                 io.to(toUser).emit('message', message)
